@@ -1,73 +1,77 @@
 const giftBox = document.getElementById("giftBox");
-const popup = document.getElementById("popup");
-const popupCard = document.querySelector(".popup-card");
-const noteText = document.getElementById("noteText");
-const canvas = document.getElementById("confettiCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const lid = giftBox.querySelector(".lid");
+const card = document.getElementById("card");
+const cardMessage = document.getElementById("cardMessage");
+const floatingText = document.querySelector(".floating-text");
 
-let confetti = [];
+// Fill background with lots of small texts
+for (let i = 0; i < 120; i++) {
+  const span = document.createElement("span");
+  span.textContent = "Happy Teacher's Day! haha cute";
+  floatingText.appendChild(span);
+}
 
-const message = `Thank you for your guidance, patience, and endless support.
-You’ve touched our lives in so many ways,
-and today we celebrate the heart you put into teaching.
-🌸 We appreciate you more than words can say. 🌸`;
+// Heartwarming note
+let message = "Dear Teacher,\n\nThank you for your endless patience, wisdom, and care. You’ve shaped not just our minds, but also our hearts. We are so grateful for all the love and lessons you share with us every day.\n\nHappy Teacher’s Day! 💙";
+
+let typingIndex = 0;
+
+function typeMessage() {
+  if (typingIndex < message.length) {
+    cardMessage.innerHTML += message.charAt(typingIndex);
+    typingIndex++;
+    setTimeout(typeMessage, 60); // slower typing for comfort
+  }
+}
 
 giftBox.addEventListener("click", () => {
-  giftBox.classList.add("open");
-  popup.style.display = "block";
-  startConfetti();
-  typeMessage(message, noteText, 40);
+  lid.style.transform = "translateY(-100px) rotate(-20deg)";
+  setTimeout(() => {
+    card.style.display = "block";
+    typeMessage();
+    startConfetti();
+  }, 600);
 });
 
-// Typing effect
-function typeMessage(msg, element, speed) {
-  let i = 0;
-  element.textContent = "";
-  function typing() {
-    if (i < msg.length) {
-      element.textContent += msg.charAt(i);
-      i++;
-      setTimeout(typing, speed);
-    }
-  }
-  typing();
+/* Confetti effect */
+const confettiCanvas = document.getElementById("confetti");
+const ctx = confettiCanvas.getContext("2d");
+confettiCanvas.width = window.innerWidth;
+confettiCanvas.height = window.innerHeight;
+
+let confettiPieces = [];
+
+function randomColor() {
+  const colors = ["#3498db", "#1abc9c", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c"];
+  return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// Confetti
+function ConfettiPiece(x, y) {
+  this.x = x;
+  this.y = y;
+  this.size = Math.random() * 8 + 4;
+  this.color = randomColor();
+  this.speed = Math.random() * 3 + 2;
+}
+
 function startConfetti() {
-  for (let i = 0; i < 150; i++) {
-    confetti.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      r: Math.random() * 6 + 4,
-      d: Math.random() * 10 + 10,
-      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-      tilt: Math.random() * 10 - 10
-    });
+  for (let i = 0; i < 300; i++) {
+    confettiPieces.push(new ConfettiPiece(Math.random() * confettiCanvas.width, -10));
   }
-  animateConfetti();
-}
-
-function animateConfetti() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  confetti.forEach((c) => {
-    ctx.beginPath();
-    ctx.fillStyle = c.color;
-    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  updateConfetti();
-  requestAnimationFrame(animateConfetti);
+  requestAnimationFrame(updateConfetti);
 }
 
 function updateConfetti() {
-  confetti.forEach((c) => {
-    c.y += c.d / 2;
-    if (c.y > canvas.height) {
-      c.y = -10;
-      c.x = Math.random() * canvas.width;
-    }
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  confettiPieces.forEach((p) => {
+    p.y += p.speed;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
   });
+  requestAnimationFrame(updateConfetti);
 }
+
+window.addEventListener("resize", () => {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+});
